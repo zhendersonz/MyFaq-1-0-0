@@ -1,0 +1,232 @@
+# ============================================================
+#                    MyFaq - Configuracao
+#                    Criado por zhendersonz
+# ============================================================
+
+# Tempo que o plugin espera pra responder de novo pro mesmo jogador (segundos)
+cooldown-por-jogador: 30
+
+# Cooldown global (segundos) - se alguem ativou uma FAQ, ninguem recebe resposta por Xs
+cooldown-global: 10
+
+# Delay entre respostas quando uma mensagem ativa varias FAQs (ms)
+delay-entre-faqs: 500
+
+# Sensibilidade do matching inteligente (0.0 a 1.0)
+# 1.0 = exato, 0.7 = permite pequenas variacoes como "comprar" e "comprá"
+sensibilidade: 0.8
+
+# OP comeca com FAQ ativo automaticamente
+op-faq-ativo: true
+
+# Palavras que NAO ativam FAQs (evita loop)
+anti-loop:
+  - "obrigado"
+  - "valeu"
+  - "brigado"
+  - "vlw"
+  - "obg"
+  - "thx"
+  - "thanks"
+  - "ok"
+  - "okay"
+
+# Mensagens de boas-vindas para novos jogadores (na primeira vez que entram)
+# Use %player% para o nome do jogador
+boas-vindas:
+  - "§e§lBem-vindo(a) ao servidor, %player%!"
+  - "§aUse §e/faq §apara ver perguntas frequentes"
+  - "§aDivirta-se e respeite as regras!"
+
+# Log de ativacoes (salva em arquivo)
+log-ativacoes: true
+log-arquivo: "faq-log.txt"
+log-formato: "[%data% %hora%] %player% acionou '%faq-id%' com a mensagem: '%mensagem%'"
+
+# Limpeza automatica do log (dias) - 0 ou vazio para desativar
+limpar-log-dias: 3
+
+# Prefixo usado nas mensagens do plugin
+prefixo: "§7[§aMyFaq§7]§r"
+
+# Notificar staff quando alguem ativar FAQ
+notificar-staff: true
+notificar-staff-msg: "§7[§aFAQ§7] §f%player% §7perguntou: §f%mensagem%"
+
+# ============================================================
+#                     PERGUNTAS FREQUENTES
+# ============================================================
+#
+# Configuracao de cada FAQ:
+#
+#   palavras:         Palavras-chave para detectar a pergunta
+#   regex:            (opicional) Padrao regex avancado
+#   respostas:        Lista de respostas (escolhe uma aleatoria)
+#   comando:          (opicional) Comando rodado ao ativar
+#   tipo-resposta:    mensagem / chat / title
+#   permissao:        (opicional) So responde se tiver a permissao
+#   permissao-negada: (opicional) Msg pra quem nao tem permissao
+#   mensagem-clicavel:
+#     texto:          Texto clicavel
+#     comando:        Comando ao clicar (usar OU url, nao ambos)
+#     url:            Link para abrir ao clicar (usar OU comando, nao ambos)
+#   som:              (opicional) Som ao receber (ex: BLOCK_NOTE_BLOCK_PLING)
+#   evento-inicio:    (opicional) Timestamp inicio (0 = sempre ativo)
+#   evento-fim:       (opicional) Timestamp fim (0 = sempre ativo)
+
+faqs:
+
+  vip:
+    palavras: ["comprar vip", "adquirir vip", "preco do vip", "quanto custa o vip"]
+    respostas:
+      - "§a§l%player%§a, adquira o VIP em nossa loja: §b§nwww.meuservidor.com.br/loja"
+      - "§e%player%, que tal dar uma olhada na loja? §awww.meuservidor.com.br/loja"
+
+  loja:
+    palavras: ["loja", "site da loja", "url da loja", "comprar rank"]
+    respostas:
+      - "§aAcesse nossa loja: §b§nwww.meuservidor.com.br/loja"
+    mensagem-clicavel:
+      texto: "§a§l[ Clique aqui para abrir a loja ]"
+      url: "https://www.meuservidor.com.br/loja"
+
+  discord:
+    palavras: ["discord", "convidar discord", "link do discord", "discord do server"]
+    respostas:
+      - "§aEntre no nosso Discord: §b§nwww.meuservidor.com.br/discord"
+    mensagem-clicavel:
+      texto: "§b§l[ Clique aqui para entrar no Discord ]"
+      url: "https://www.meuservidor.com.br/discord"
+
+  regras:
+    palavras: ["regras", "regra do servidor", "quais as regras", "o que pode"]
+    respostas:
+      - "§eRegras do servidor:\n§71) Sem hacks ou cheat\n§72) Sem flood ou spam\n§73) Sem xingamentos\n§74) Respeite todos\n§75) Divirta-se!"
+
+  spawn:
+    palavras: ["como ir pro spawn", "teleportar spawn", "/spawn", "voltar ao spawn", "voltar spawn"]
+    respostas:
+      - "§eUse §a/spawn §epara voltar ao spawn do servidor."
+
+  warp:
+    palavras: ["como usar warp", "/warp", "teleportar warp", "comandos warp"]
+    respostas:
+      - "§eUse §a/warp <nome> §epara teleportar. Exemplo: §a/warp spawn"
+
+  ajuda:
+    palavras: ["ajuda", "socorro", "preciso de ajuda", "oque fazer", "comandos uteis"]
+    respostas:
+      - "§eUse §a/ajuda §epara ver a lista completa de comandos do servidor."
+
+  reportar:
+    palavras: ["reportar", "report", "denunciar", "reportar jogador", "denunciar hacker"]
+    respostas:
+      - "§eUse §a/report <jogador> <motivo> §epara denunciar um jogador a staff."
+
+  ticket:
+    palavras: ["ticket", "abrir ticket", "chamar adm", "chamar staff", "falar com adm"]
+    respostas:
+      - "§eUse §a/ticket §epara abrir um chamado com a equipe staff."
+
+  kit:
+    palavras: ["kit", "ganhar kit", "pegar kit", "/kit", "kits"]
+    respostas:
+      - "§eUse §a/kit §epara ver todos os kits disponiveis no servidor."
+
+  clan:
+    palavras: ["clan", "criar clan", "/clan", "guilda", "criar guilda"]
+    respostas:
+      - "§eUse §a/clan §epara criar e gerenciar seu clan no servidor."
+
+  land:
+    palavras: ["proteger terra", "claim", "proteger area", "como proteger base", "proteger base"]
+    respostas:
+      - "§eUse uma pá para clamar terrenos. Digite §a/land §epara mais informacoes."
+
+  tpa:
+    palavras: ["como dar tpa", "teleportar pra alguem", "/tpa", "tpa", "/tpa aqui"]
+    respostas:
+      - "§eUse §a/tpa <jogador> §epara enviar um pedido de teleporte para o jogador."
+
+  home:
+    palavras: ["home", "/home", "setar home", "criar home", "sethome"]
+    respostas:
+      - "§eUse §a/sethome §epara definir sua home e §a/home §epara ir ate ela."
+
+  money:
+    palavras: ["dinheiro", "money", "coins", "como ganhar dinheiro", "economia", "como ter money"]
+    respostas:
+      - "§eVenda itens em §a/shop §eou mate mobs para ganhar dinheiro no jogo."
+
+  shop:
+    palavras: ["shop", "/shop", "vender itens", "loja do servidor", "comprar itens"]
+    respostas:
+      - "§eUse §a/shop §epara comprar e vender itens no servidor."
+
+  hack:
+    palavras: ["hack", "hacker", "hacked client", "usar hack", "qual hack usar"]
+    respostas:
+      - "§cHacks sao PROIBIDOS. Use §a/report §cpara denunciar."
+
+  xray:
+    palavras: ["xray", "x-ray", "x ray", "anti xray", "texture xray", "xray texture"]
+    respostas:
+      - "§cX-Ray PROIBIDO. Temos anti-xray ativo, ban automatico."
+
+  killaura:
+    palavras: ["killaura", "aura", "kill aura", "autoclick", "auto click", "auto-click", "autoclicker"]
+    respostas:
+      - "§cAutoclick e Killaura sao detectados automaticamente. Ban permanente."
+
+  ghost:
+    palavras: ["ghost client", "cliente modificado", "cliente hack", "vape", "lite client", "inject", "injetar", "modified client"]
+    respostas:
+      - "§cQualquer cliente modificado e PROIBIDO. Apenas Vanilla ou clients permitidos."
+
+  cheat:
+    palavras: ["cheat", "trapaca", "trapacear", "trapaça", "bugar", "exploit"]
+    respostas:
+      - "§cCheating/exploit = ban. Reporte em §a/report"
+
+  dupe:
+    palavras: ["duplicar", "dupe", "duplicar item", "duplicar itens", "como duplicar", "dupe glitch", "duplication", "duplicacao", "duplicar dinheiro"]
+    respostas:
+      - "§cDuplicar itens e PROIBIDO e causa ban permanente. Use §a/report §cpara denunciar."
+
+  sugestao:
+    palavras: ["por que nao adiciona", "adiciona tal", "deveria ter", "porque nao tem", "coloca", "implementa", "que tal colocar", "adicionar", "sugestao"]
+    respostas:
+      - "§ePoste sugestoes em nosso Discord: §bwww.meuservidor.com.br/discord"
+    mensagem-clicavel:
+      texto: "§b§l[ Clique para abrir o Discord ]"
+      url: "https://www.meuservidor.com.br/discord"
+
+  live:
+    palavras: ["live", "stream", "twitch", "ao vivo", "fazer live", "cade a live", "live hoje", "vai fazer live", "esta em live"]
+    respostas:
+      - "§eFaco live quando da vontade! Aviso no Discord quando for rolar."
+    mensagem-clicavel:
+      texto: "§b§l[ Clique para entrar no Discord ]"
+      url: "https://www.meuservidor.com.br/discord"
+
+  lag:
+    palavras: ["lag", "servidor ta lagando", "travando", "lagando", "travado"]
+    respostas:
+      - "§eTente usar §a/lag §epara ver o status. Se continuar, diminua suas configs de video."
+
+  reset:
+    palavras: ["reset", "vai resetar", "quando reseta", "proximo reset", "vai ter reset"]
+    respostas:
+      - "§eO servidor reseta a cada 3 meses. Acompanhe no Discord: §bwww.meuservidor.com.br/discord"
+
+  rank:
+    palavras: ["rank", "meu rank", "como upar de rank", "/rank", "subir de rank"]
+    respostas:
+      - "§eUse §a/rank §epara ver seu rank atual e seu progresso para o proximo."
+
+  yt:
+    palavras: ["youtube", "youtuber", "cargo youtuber", "como ser yt", "aplicar yt"]
+    respostas:
+      - "§ePara se tornar YouTuber, acesse nosso Discord e veja o canal §a#aplicar-yt"
+    permissao: ""
+    tipo-resposta: "mensagem"

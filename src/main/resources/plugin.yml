@@ -1,0 +1,26 @@
+name: MyFaq
+version: 1.0.0
+main: me.zhendersonz.myfaq.MyFaq
+api-version: '1.21'
+author: zhendersonz
+description: Responde perguntas frequentes automaticamente no chat
+
+commands:
+  faq:
+    description: Comando principal do MyFaq
+    usage: /<command> [admin|recarregar|toggle]
+    aliases: [myfaq, faqs, perguntas]
+
+permissions:
+  myfaq.admin:
+    description: Permissao para administrar o FAQ (comandos)
+    default: op
+  myfaq.notify:
+    description: Receber notificacao quando alguem ativar FAQ
+    default: false
+  myfaq.ignorar:
+    description: Nao ativar FAQs para este jogador
+    default: false
+  myfaq.toggle:
+    description: Pode ativar/desativar o FAQ para si mesmo
+    default: true
