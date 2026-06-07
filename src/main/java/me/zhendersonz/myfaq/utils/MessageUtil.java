@@ -3,33 +3,51 @@ package me.zhendersonz.myfaq.utils;
 import me.zhendersonz.myfaq.models.FAQEntry;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.title.Title;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
+import java.time.Duration;
+
 public class MessageUtil {
 
+    private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
+    private static final LegacyComponentSerializer LEGACY_SERIALIZER = LegacyComponentSerializer.builder()
+        .character('&')
+        .extractUrls()
+        .hexColors()
+        .build();
+
     public static String applyPlaceholders(String message, Player player, FAQEntry faq) {
+        if (message == null) return "";
         String result = message;
         result = result.replace("%player%", player.getName());
-        result = result.replace("%player_display%", player.getDisplayName());
+        result = result.replace("%player_display%", LegacyComponentSerializer.legacySection().serialize(player.displayName()));
         result = result.replace("%faq_id%", faq != null ? faq.getId() : "");
         result = result.replace("%uuid%", player.getUniqueId().toString());
         return result;
     }
 
     public static Component toComponent(String text) {
-        return LegacyComponentSerializer.legacySection()
-            .deserialize(text.replace('&', '§'));
+        if (text == null) return Component.empty();
+        // Tenta processar MiniMessage se houver tags
+        if (text.contains("<") && (text.contains(">") || text.contains("/"))) {
+            return MINI_MESSAGE.deserialize(text);
+        }
+        return LEGACY_SERIALIZER.deserialize(text.replace('§', '&'));
     }
 
     public static Component buildClickable(String text, String command) {
+        if (command == null) return toComponent(text);
         String cmd = command.startsWith("/") ? command.substring(1) : command;
         return toComponent(text)
             .clickEvent(ClickEvent.runCommand("/" + cmd));
     }
 
     public static Component buildClickableUrl(String text, String url) {
+        if (url == null) return toComponent(text);
         String finalUrl = url;
         if (!finalUrl.startsWith("http://") && !finalUrl.startsWith("https://")) {
             finalUrl = "https://" + finalUrl;
@@ -61,11 +79,12 @@ public class MessageUtil {
 
         switch (tipo.toLowerCase()) {
             case "title":
-                player.sendTitle(
-                    LegacyComponentSerializer.legacySection().serialize(msg),
-                    "",
-                    10, 70, 20
+                Title title = Title.title(
+                    msg,
+                    Component.empty(),
+                    Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3500), Duration.ofMillis(1000))
                 );
+                player.showTitle(title);
                 player.sendMessage(msg);
                 break;
             case "chat":

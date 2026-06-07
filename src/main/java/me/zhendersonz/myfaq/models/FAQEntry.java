@@ -2,6 +2,7 @@ package me.zhendersonz.myfaq.models;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class FAQEntry {
 
@@ -19,7 +20,7 @@ public class FAQEntry {
     private final String sound;
     private final long eventStart;
     private final long eventEnd;
-    private int metricsCount;
+    private final AtomicInteger metricsCount;
 
     public FAQEntry(String id, List<String> keywords, String regex, List<String> responses,
                     String command, String responseType, String permission,
@@ -40,7 +41,7 @@ public class FAQEntry {
         this.sound = sound;
         this.eventStart = eventStart;
         this.eventEnd = eventEnd;
-        this.metricsCount = 0;
+        this.metricsCount = new AtomicInteger(0);
     }
 
     public String getId() { return id; }
@@ -57,9 +58,9 @@ public class FAQEntry {
     public String getSound() { return sound; }
     public long getEventStart() { return eventStart; }
     public long getEventEnd() { return eventEnd; }
-    public int getMetricsCount() { return metricsCount; }
-    public void setMetricsCount(int count) { this.metricsCount = count; }
-    public void incrementMetrics() { this.metricsCount++; }
+    public int getMetricsCount() { return metricsCount.get(); }
+    public void setMetricsCount(int count) { this.metricsCount.set(count); }
+    public void incrementMetrics() { this.metricsCount.incrementAndGet(); }
 
     public String getRandomResponse() {
         if (responses.isEmpty()) return "";

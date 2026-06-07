@@ -10,16 +10,19 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 
 public class FAQManager {
 
     private final MyFaq plugin;
-    private final Map<String, FAQEntry> faqs = new LinkedHashMap<>();
+    private final Map<String, FAQEntry> faqs = new ConcurrentHashMap<>();
     private double sensibilidade;
-    private List<String> antiLoop;
-    private List<String> boasVindas;
+    private List<String> antiLoop = new ArrayList<>();
+    private Set<String> stopWords = new HashSet<>();
+    private List<String> boasVindas = new ArrayList<>();
     private boolean logAtivacoes;
     private String logArquivo;
     private String logFormato;
@@ -39,7 +42,18 @@ public class FAQManager {
 
         this.sensibilidade = config.getDouble("sensibilidade", 0.8);
         this.antiLoop = config.getStringList("anti-loop");
+        if (this.antiLoop == null) this.antiLoop = new ArrayList<>();
+        
+        List<String> stopList = config.getStringList("stop-words");
+        if (stopList == null || stopList.isEmpty()) {
+            this.stopWords = new HashSet<>(Arrays.asList("como", "fazer", "para", "quero", "queria", "onde"));
+        } else {
+            this.stopWords = stopList.stream().map(String::toLowerCase).collect(Collectors.toSet());
+        }
+
         this.boasVindas = config.getStringList("boas-vindas");
+        if (this.boasVindas == null) this.boasVindas = new ArrayList<>();
+
         this.logAtivacoes = config.getBoolean("log-ativacoes", true);
         this.logArquivo = config.getString("log-arquivo", "faq-log.txt");
         this.logFormato = config.getString("log-formato",
@@ -117,15 +131,22 @@ public class FAQManager {
             }
         }
 
+        FAQEntry bestMatch = null;
+        double highestScore = -1.0;
+
         for (FAQEntry faq : faqs.values()) {
             if (!faq.isEventActive()) continue;
 
-            if (matchFAQ(normalized, faq)) {
-                return faq;
+            MatchResult result = matchFAQDetailed(normalized, faq);
+            if (result.matched && result.score > highestScore) {
+                highestScore = result.score;
+                bestMatch = faq;
             }
         }
 
-        return null;
+        if (highestScore < sensibilidade) return null;
+
+        return bestMatch;
     }
 
     public static class MatchResult {
@@ -140,7 +161,26 @@ public class FAQManager {
             this.method = method;
             this.keyword = keyword;
             this.similarity = similarity;
-            this.score = matched ? similarity : 0.0;
+            
+            double baseScore = similarity;
+            if (matched) {
+                switch (method) {
+                    case "regex":
+                    case "contains":
+                        baseScore = 1.0;
+                        break;
+                    case "contains-clean":
+                        baseScore = 0.98;
+                        break;
+                    case "janela-palavras":
+                        baseScore = Math.max(similarity, 0.95);
+                        break;
+                    default:
+                        baseScore = similarity;
+                        break;
+                }
+            }
+            this.score = matched ? baseScore : 0.0;
         }
 
         public double getScore() {
@@ -173,6 +213,8 @@ public class FAQManager {
             }
         }
 
+        String cleanedMsg = StringSimilarity.cleanStopWords(normalized, stopWords);
+
         for (String keyword : faq.getKeywords()) {
             String kw = StringSimilarity.normalize(keyword);
             if (kw.isEmpty()) continue;
@@ -180,68 +222,72 @@ public class FAQManager {
             if (normalized.contains(kw)) {
                 return new MatchResult(true, "contains", keyword, 1.0);
             }
-        }
 
-        for (String keyword : faq.getKeywords()) {
-            String kw = StringSimilarity.normalize(keyword);
-            if (kw.isEmpty()) continue;
-
-            String[] kwWords = kw.split("\\s+");
-            String[] msgWords = normalized.split("\\s+");
-
-            if (kwWords.length >= 2 && msgWords.length >= kwWords.length) {
-                int matchCount = 0;
-                for (String kwWord : kwWords) {
-                    if (kwWord.length() <= 2) { matchCount++; continue; }
-                    for (String msgWord : msgWords) {
-                        if (msgWord.equals(kwWord)) { matchCount++; break; }
-                    }
-                }
-                double ratio = (double) matchCount / kwWords.length;
-                if (ratio >= 0.8) {
-                    return new MatchResult(true, "palavras", keyword, ratio);
-                }
+            String cleanedKw = StringSimilarity.cleanStopWords(kw, stopWords);
+            if (!cleanedKw.isEmpty() && !cleanedMsg.isEmpty() && cleanedMsg.contains(cleanedKw)) {
+                return new MatchResult(true, "contains-clean", keyword, 1.0);
             }
         }
 
         if (sensibilidade < 1.0) {
+            // Trava para mensagens muito curtas/vazias após limpeza
+            if (cleanedMsg.isEmpty() || (cleanedMsg.split("\\s+").length <= 1 && normalized.length() < 10)) {
+                return new MatchResult(false, "mensagem-curta-significado", "", 0.0);
+            }
+
             for (String keyword : faq.getKeywords()) {
                 String kw = StringSimilarity.normalize(keyword);
-                if (kw.isEmpty() || kw.length() <= 2) continue;
+                if (kw.isEmpty()) continue;
 
+                String cleanedKw = StringSimilarity.cleanStopWords(kw, stopWords);
                 String[] kwWords = kw.split("\\s+");
                 String[] msgWords = normalized.split("\\s+");
 
-                if (kwWords.length >= 2 && msgWords.length >= kwWords.length) {
-                    int matchCount = 0;
-                    for (String kwWord : kwWords) {
-                        if (kwWord.length() <= 2) { matchCount++; continue; }
-                        for (String msgWord : msgWords) {
-                            double sim = StringSimilarity.levenshteinSimilarity(msgWord, kwWord);
-                            if (sim >= sensibilidade) { matchCount++; break; }
+                // Janela deslizante baseada em palavras
+                if (msgWords.length >= kwWords.length) {
+                    for (int i = 0; i <= msgWords.length - kwWords.length; i++) {
+                        StringBuilder windowBuilder = new StringBuilder();
+                        for (int j = 0; j < kwWords.length; j++) {
+                            windowBuilder.append(msgWords[i + j]).append(" ");
                         }
-                    }
-                    double ratio = (double) matchCount / kwWords.length;
-                    if (ratio >= sensibilidade) {
-                        return new MatchResult(true, "similaridade", keyword, ratio);
-                    }
-                }
-
-                double similarity = StringSimilarity.levenshteinSimilarity(
-                    normalized.length() > 100 ? normalized.substring(0, 100) : normalized,
-                    kw
-                );
-                if (similarity >= sensibilidade) {
-                    return new MatchResult(true, "similaridade-global", keyword, similarity);
-                }
-
-                if (normalized.length() > kw.length()) {
-                    for (int i = 0; i <= normalized.length() - kw.length(); i++) {
-                        String window = normalized.substring(i, i + kw.length());
-                        double sim = StringSimilarity.levenshteinSimilarity(window, kw);
+                        String window = windowBuilder.toString().trim();
+                        double sim = StringSimilarity.jaroWinklerSimilarity(window, kw);
+                        
                         if (sim >= sensibilidade) {
-                            return new MatchResult(true, "janela", keyword, sim);
+                            return new MatchResult(true, "janela-palavras", keyword, sim);
                         }
+                    }
+                }
+
+                // Similaridade global aprimorada (usando versões limpas se possível)
+                double simJaro = StringSimilarity.jaroWinklerSimilarity(
+                    cleanedMsg.isEmpty() ? normalized : cleanedMsg,
+                    cleanedKw.isEmpty() ? kw : cleanedKw
+                );
+                
+                if (simJaro >= sensibilidade) {
+                    return new MatchResult(true, "jaro-winkler-global", keyword, simJaro);
+                }
+
+                // Similaridade por palavras individuais (fuzzy match)
+                int matchCount = 0;
+                int significantKwWords = 0;
+                for (String kwWord : kwWords) {
+                    if (kwWord.length() <= 2) continue; // Nao conta palavras curtas
+                    significantKwWords++;
+                    for (String msgWord : msgWords) {
+                        double wordSim = StringSimilarity.jaroWinklerSimilarity(msgWord, kwWord);
+                        if (wordSim >= 0.85) { // Rigoroso para palavras individuais
+                            matchCount++;
+                            break;
+                        }
+                    }
+                }
+                
+                if (significantKwWords > 0) {
+                    double ratio = (double) matchCount / significantKwWords;
+                    if (ratio >= sensibilidade) {
+                        return new MatchResult(true, "fuzzy-palavras", keyword, ratio);
                     }
                 }
             }

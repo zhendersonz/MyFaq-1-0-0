@@ -36,7 +36,10 @@ public class MyFaq extends JavaPlugin {
         this.notificarStaffMsg = getConfig().getString("notificar-staff-msg",
             "§7[§aFAQ§7] §f%player% §7perguntou: §f%mensagem%");
 
-        getCommand("faq").setExecutor(new FAQCommand(this));
+        FAQCommand faqCommand = new FAQCommand(this);
+        getCommand("faq").setExecutor(faqCommand);
+        getCommand("faq").setTabCompleter(faqCommand);
+        
         getServer().getPluginManager().registerEvents(new ChatListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
 
@@ -59,6 +62,7 @@ public class MyFaq extends JavaPlugin {
     @Override
     public void onDisable() {
         metricsManager.save();
+        cooldownManager.saveData();
         Bukkit.getScheduler().cancelTasks(this);
         getLogger().info("MyFaq desativado.");
     }

@@ -31,6 +31,38 @@ anti-loop:
   - "ok"
   - "okay"
 
+# Palavras ignoradas no matching inteligente (melhora a precisao)
+# O bot foca no resto da frase para entender a pergunta.
+stop-words:
+  - "como"
+  - "fazer"
+  - "para"
+  - "quero"
+  - "queria"
+  - "onde"
+  - "posso"
+  - "com"
+  - "mais"
+  - "muito"
+  - "esta"
+  - "está"
+  - "estou"
+  - "tem"
+  - "temos"
+  - "pode"
+  - "podem"
+  - "ser"
+  - "sou"
+  - "você"
+  - "voce"
+  - "vcs"
+  - "faz"
+  - "fala"
+  - "alguem"
+  - "algum"
+  - "qual"
+  - "quais"
+
 # Mensagens de boas-vindas para novos jogadores (na primeira vez que entram)
 # Use %player% para o nome do jogador
 boas-vindas:

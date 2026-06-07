@@ -45,14 +45,24 @@ Aliases: `/myfaq`, `/faqs`, `/perguntas`
 
 ## Como funciona
 
-Quando um jogador digita uma mensagem no chat, o plugin verifica em **4 níveis** se a mensagem corresponde a alguma FAQ cadastrada:
+Quando um jogador digita uma mensagem no chat, o plugin verifica em **5 níveis** se a mensagem corresponde a alguma FAQ cadastrada:
 
-1. **Contém** — A mensagem contém exatamente uma das palavras-chave
-2. **Palavra por palavra** — Cada palavra da keyword aparece na mensagem (ignorando palavras curtas de ≤2 letras)
-3. **Similaridade (Levenshtein)** — Similaridade por caractere entre cada palavra da keyword e palavras da mensagem
-4. **Janela deslizante** — Similaridade em janelas contínuas de palavras
+1. **Regex** — Padrao regex avancado (se configurado)
+2. **Contém** — A mensagem contém exatamente uma das palavras-chave
+3. **Busca Limpa** — Remove *stop-words* (como, eu, para) e busca a keyword
+4. **Similaridade (Jaro-Winkler)** — Algoritmo superior para erros de digitação e strings curtas
+5. **Janela deslizante baseada em palavras** — Busca a keyword dentro de frases longas, palavra por palavra
 
-A resposta é enviada **de forma privada** para o jogador (não aparece no chat público).
+### Cores Modernas e HEX
+
+O plugin suporta tanto o sistema legado (`&a`, `§e`) quanto o moderno **MiniMessage**:
+- HEX: `<#ff5555>Mensagem colorida`
+- Gradientes: `<gradient:#ff5555:#5555ff>Texto com gradiente</gradient>`
+- Estilos: `<bold>Negrito</bold>`, `<italic>Italico</italic>`
+
+### Comandos e Sugestões (Tab-Complete)
+
+Todos os comandos possuem suporte a **Tab-Completion** inteligente, sugerindo subcomandos e IDs de FAQs de acordo com a permissão do jogador.
 
 ### Cooldown
 
