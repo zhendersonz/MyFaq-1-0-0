@@ -1,5 +1,5 @@
 name: MyFaq
-version: 1.0.0
+version: 1.0.1
 main: me.zhendersonz.myfaq.MyFaq
 api-version: '1.21'
 author: zhendersonz

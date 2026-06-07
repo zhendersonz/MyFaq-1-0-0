@@ -1,4 +1,4 @@
-# MyFaq 1.0.0
+# MyFaq 1.0.1
 
 Plugin para **Paper 1.21.1** que responde automaticamente perguntas frequentes no chat.
 
